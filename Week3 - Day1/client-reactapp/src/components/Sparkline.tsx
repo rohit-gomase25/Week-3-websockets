@@ -13,11 +13,15 @@ export function Sparkline({ prices, isGreen, width = 80, height = 30}: Sparkline
     const maxPrice = Math.max(...prices);
     const priceRange = maxPrice - minPrice || 1;
 
-    const points = prices.map((price,index)=>{
-        const x = (index / (prices.length - 1)) * width;
-        const y = height - ((price - minPrice) / priceRange) * (height - 4) - 2;
-        return `${x},${y}`;
-    });
+    const points = prices.map((price, index) => {
+    // Ensure price is a number, default to minPrice if corrupted
+    const validPrice = typeof price === 'number' ? price : minPrice;
+    
+    const x = (index / (prices.length - 1)) * width;
+    const y = height - ((validPrice - minPrice) / priceRange) * (height - 4) - 2;
+    
+    return `${x.toFixed(2)},${y.toFixed(2)}`; // toFixed(2) keeps the SVG string clean
+});
     
 
     const linePath = `M${points.join("L")}`;
