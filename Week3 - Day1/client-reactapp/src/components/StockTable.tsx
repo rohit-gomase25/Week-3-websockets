@@ -1,6 +1,5 @@
 import type { Stock } from "../types/types";
 import { StockRow } from "./StockRow";
-import { useStore } from "../stores/useStockStore";
 
 type StockTableProps = {
   stocks:   Stock[];
@@ -20,12 +19,10 @@ const COLUMNS = [
 ];
 
 export function StockTable({ stocks, history, sortBy, sortDir, onSort }: StockTableProps) {
-  const { selectedSymbol, setSelected } = useStore();
-
   return (
     <div style={{ flex: 1, overflowY: "auto", backgroundColor: "#0D1117" }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-
+        
         <thead style={{
           position: "sticky", top: 0, zIndex: 10,
           backgroundColor: "#0D1117",
@@ -58,24 +55,14 @@ export function StockTable({ stocks, history, sortBy, sortDir, onSort }: StockTa
         </thead>
 
         <tbody>
-          {stocks.map((stock) => {
-            // Debug: Uncomment the line below to see if history is reaching the component
-            // console.log(`History for ${stock.symbol}:`, history[stock.symbol]);
-
-            return (
-              <StockRow
-                key={stock.symbol}
-                stock={stock}
-                // Ensure we pass an array. If the history doesn't have 2+ points, 
-                // the sparkline usually cannot draw a line.
-                history={history[stock.symbol] || []}
-                isSelected={selectedSymbol === stock.symbol}
-                onClick={() => {
-                  setSelected(selectedSymbol === stock.symbol ? null : stock.symbol);
-                }}
-              />
-            );
-          })}
+          {stocks.map((stock) => (
+            <StockRow
+              key={stock.symbol}
+              stock={stock}
+              // We only need the history array for the sparkline now
+              history={history[stock.symbol] || []}
+            />
+          ))}
           
           {stocks.length === 0 && (
             <tr>

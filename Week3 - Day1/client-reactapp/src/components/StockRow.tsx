@@ -1,22 +1,22 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Stock } from "../types/types";
 import { Sparkline } from "./Sparkline";
 import { formatPrice, formatPercent, formatChange,
          formatVolume, getColor, getBgColor } from "../helper/helpers";
- 
+
 type StockRowProps = {
-  stock:      Stock;
-  history:    number[];
-  isSelected: boolean;
-  onClick:    () => void;
+  stock: Stock;
+  history: number[];
+  isSelected?: boolean; // Optional now if handled by URL
 };
- 
-export function StockRow({ stock, history = [], isSelected, onClick }: StockRowProps) {
+
+export function StockRow({ stock, history = [] }: StockRowProps) {
+  const navigate = useNavigate();
   const prevPrice = useRef<number>(stock?.price || 0);
   const [flash, setFlash] = useState<string>("");
 
   useEffect(() => {
-    // Safety check: if stock or price is missing, don't flash
     if (!stock?.price || stock.price === prevPrice.current) return;
 
     setFlash(stock.price > prevPrice.current ? "flash-up" : "flash-down");
@@ -26,22 +26,28 @@ export function StockRow({ stock, history = [], isSelected, onClick }: StockRowP
     return () => clearTimeout(timer);
   }, [stock?.price]);
 
-  // Defensive checks for values
   const price = stock?.price || 0;
   const changePercent = stock?.changePercent || 0;
   const change = stock?.change || 0;
   const volume = stock?.volume || 0;
   const isPositive = changePercent >= 0;
 
+  // Navigate to the dynamic stock detail route
+  const handleClick = () => {
+    navigate(`/stock/${stock.symbol}`);
+  };
+
   return (
     <tr
       className={flash}
-      onClick={onClick}
+      onClick={handleClick}
       style={{
         cursor: "pointer",
         borderBottom: "1px solid #161B22",
-        backgroundColor: isSelected ? "rgba(255, 184, 0, 0.07)" : "transparent",
+        transition: "background-color 0.2s",
       }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#161B22")}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
     >
       <td style={{ padding: "10px 16px" }}>
         <div style={{ fontWeight: "bold", color: "#E6EDF3", fontSize: "13px" }}>
@@ -82,7 +88,6 @@ export function StockRow({ stock, history = [], isSelected, onClick }: StockRowP
       </td>
 
       <td style={{ padding: "10px 16px", textAlign: "center" }}>
-        {/* Pass the array directly with a fallback */}
         <Sparkline prices={Array.isArray(history) ? history : []} isGreen={isPositive} width={70} height={26} />
       </td>
     </tr>
